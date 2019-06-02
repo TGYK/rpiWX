@@ -7,7 +7,7 @@
 # $2 = frequency
 
 #Desired elevation to target
-deselev=20
+deselev=CHANGEME
 
 #Get prediction start/end from TLE files respectively
 PREDICTION_START=`/usr/bin/predict -t /home/pi/weather/predict/weather.tle -p "${1}" | head -1`
