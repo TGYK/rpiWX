@@ -54,7 +54,7 @@ sendemail=FALSE
 #Email to send to
 senduser=you@youremail.com
 #Directory to make date/time folders for organization
-wdir="/home/pi/weather/"
+wdir="/home/pi/rpiWX/weather/"
 
 
 
