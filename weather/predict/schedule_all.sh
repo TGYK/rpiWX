@@ -2,7 +2,19 @@
 #Original credit: haslettj
 #Edit for comments/usibility/functionality: TGYK
 
-
+#Check for newer updates
+if [ -d /home/pi/rpiWX/.git ]
+  then
+    if ! git status -uno | grep "up-to-date"
+      then
+        echo "Check the schedule_all script for instructions to update!" | mail -s "Newer version of rpiWX available" pi
+    fi
+fi
+#Instructions to update and keep configs:
+#cd /home/pi/rpiWX
+#git stash
+#git pull origin master
+#git stash pop
 
 
 # Update Satellite Information
