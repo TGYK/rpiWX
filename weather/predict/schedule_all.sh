@@ -3,6 +3,9 @@
 #Original credit: haslettj
 #Edit for comments/usibility/functionality: TGYK
 
+#Test commit
+#Testing update-checking
+
 #Check for newer updates
 if [ -d /home/pi/rpiWX/.git ]
   then
