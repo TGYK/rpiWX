@@ -46,22 +46,17 @@ while [ `date --date="TZ=\"UTC\" @${var2}" +%D` == `date +%D` ]; do
           var6=$(at -c $var4 | grep "/home/pi/rpiWX/weather/predict/receive_and_process_satellite.sh" | cut -d " " -f 8)
           #Get the difference in time between scheduled at job and proposed at job
           diff=`expr $var5 - $var1`
-          #Debugging output
-#          echo "Pass duration for job $var4 : $var6"
-#          echo "Time for job $var4 : $var5"
-#          echo "Time for proposed job : $var1"
-#          echo "Difference in times : ${diff#-}"
-            #If the absolute value of the difference in time is less than the pass time of the read already-scheduled job, then...
-            if [ ${diff#-} -lt $var6 ]
-              then
-                #Set allow to false
-                allow="FALSE"
-                #Print explaination of disallowance for scheduling
-                echo "++++"
-                echo "Warning: Job for $1 disallowed to be scheduled due to overlap in pass time"
-                echo "Warning: Proposed start time : $(date --date="@$var1" +"%H:%M:%S")"
-                echo "Warning: Conflicting job already scheduled : $(date --date="@$var5" +"%H:%M:%S")"
-            fi
+          #If the absolute value of the difference in time is less than the pass time of the read already-scheduled job, then...
+          if [ ${diff#-} -lt $var6 ]
+            then
+              #Set allow to false
+              allow="FALSE"
+              #Print explaination of disallowance for scheduling
+              echo "++++"
+              echo "Warning: Job for $1 disallowed to be scheduled due to overlap in pass time"
+              echo "Warning: Proposed start time : $(date --date="@$var1" +"%H:%M:%S")"
+              echo "Warning: Conflicting job already scheduled : $(date --date="@$var5" +"%H:%M:%S")"
+          fi
       done
     #If the difference has always been greater than the pass time of previously scheduled jobs, hurrah! Allow the job to be scheduled.
     if [ $allow = "TRUE" ]
