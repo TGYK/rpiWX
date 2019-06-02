@@ -12,19 +12,25 @@ This whole project assumes you are running on Raspbian, using the RTL-SDR.
 
 ## Apt-get
 
+    sudo apt-get update
     sudo apt-get install libusb-1.0
     sudo apt-get install cmake
     sudo apt-get install sox
     sudo apt-get install at
     sudo apt-get install predict
-    sudo apt-get install libglib2.0-dev
     sudo apt-get install fpc
     sudo apt-get install libncurses5-dev libncursesw5-dev  
+    sudo apt-get install imagemagick
+    sudo apt-get install git
+    
+### May be needed for wxtoimg to run
+
+    sudo apt-get install libxft2:armhf
 
 ## Modify files
 
 #### New file at:
-    /etc/modprobe.d/no-rtl.con
+    /etc/modprobe.d/no-rtl.conf
 
 With contents:
 
@@ -41,14 +47,6 @@ With contents:
     Latitude: <Your Latitude>
     Longitude: <Your Longitude EAST POSITIVE>
     Altitude: 25
-
-#### New directory at:
-
-    ~/weather
-
-#### New directory at:
-
-    ~/weather/predict
 
 ## Wget
 
@@ -70,19 +68,8 @@ With contents:
     make
     sudo make install
     sudo ldconfig
-    cd ~
-    sudo cp ./rtl-sdr/rtl-sdr.rules /etc/udev/rules.d/
+    sudo make install-udev-rules
 
-#### libgpredict:
-
-    git clone https://github.com/cubehub/libgpredict.git
-    cd libgpredict
-    mkdir build
-    cd build
-    cmake ../
-    make
-    make install
-    sudo ldconfig
 
 
 #### meteor_demod:
@@ -110,20 +97,25 @@ With contents:
     make
     sudo make install
 
+#### rpiWX
 
-Once everything is installed, plug in your RTL-SDR and run `rtl_test -t` to test that it is functioning properly. Let it warm up because the ppm value is important for later.
+    git clone https://github.com/TGYK/rpiWX
+    cd rpiWX
+    cp weather ~/
+    cd ~/weather/predict
+    sudo chmod +x *.sh
+
+Once everything is installed, reboot and plug in your RTL-SDR and run `rtl_test -t` to test that it is functioning properly. Let it warm up for 10-15 minutes and make a note of the average ppm error value for configuration later.
 
 Set up predict by running it for the first time with the command `predict` enter long/lat accordingly. Predict uses north-positive and **WEST-positive**. Google maps supplies north-positive and **EAST-positive**. Keep this in mind and do the math.
 
 Run wxtoimg using "wxtoimg" and accept the ToS. Make sure to have created the file at `~/.wxtoimgrc` with your lat/lon **EAST-positive**.
 
-Place the three scripts in `~/weather/predict/` and enable execution on them with `sudo chmod +x <scriptname>`
-
 Make a cron job with `crontab -e` and add the following line:
 
     1 0 * * * /home/pi/weather/predict/schedule_all.sh
 
-Modify the receive_and_process_satellite.sh script to add your gain values, etc
+Modify the receive_and_process_satellite.sh script to add your gain values, ppm error, etc
 Modify the schedule_satellite.sh script to add your desired elevation
 
 Optionally, you can kick things off with:
