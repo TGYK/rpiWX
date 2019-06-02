@@ -60,7 +60,7 @@ wdir="/home/pi/weather/"
 #Get current date/time for folder structure
 date=`date +%-m-%-d-%Y`
 curtime=`date +%-I:%M%^p`
-#Epoch time + pass time used to correct the timestamp on NOAA passes so the map lines up
+#Epoch time + pass time used to correct the timestamp on NOAA passes so the map lines upp
 correctiontime=$(date --date="@`expr $6 + $5`" +%Y%m%d%H%M.%S)
 
 
@@ -157,7 +157,7 @@ if [ "${1}"  != "METEOR-M 2" ]
     if ! /usr/local/bin/wxtoimg -m ${3}-map.png -e ZA $3.wav $3-ZA.png 2>&1 | grep "warning: couldn't find telemetry data\|warning: Narrow IF"
       then
         #Use wxtoimg to decode the image, use MSA-precip enhancement
-        /usr/local/bin/wxtoimg -m ${3}-map.png -e MSA-precip $3.wav $3-MSA-precip.png
+        /usr/local/bin/wxtoimg -m ${3}-map.png -e MSA $3.wav $3-MSA.png
         #Use wxtoimg to decode the image, use MCIR enhancement
         /usr/local/bin/wxtoimg -m ${3}-map.png -e MCIR $3.wav $3-MCIR.png
         #Use wxtoimg to decode the image, use NO enhancement
@@ -168,18 +168,8 @@ if [ "${1}"  != "METEOR-M 2" ]
         #If enabled, send an email with the pictures attached, only on successful capture.
         if [ "$sendemail" == "TRUE" ]
           then
-            #Get attachments as png files
-            for attachment in *.png
-              do
-                #Don't send the map file
-                if ! echo $attachment | grep "map"
-                  then
-                    #Create our attachment string
-                    attstr+=" -A $attachment"
-                fi
-              done
             #Send the email.
-            mail -s $3 $attstr $senduser < $3.txt
+            mail -s $3 -A $3-MCIR.png -A $3-MSA.png $senduser < $3.txt
         fi
     else
         #If bad capture detected, state that for the record
