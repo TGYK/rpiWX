@@ -3,6 +3,7 @@
 Scripts to automagically capture and decode weather satellites
 
 These are some poorly written instructions and a list of dependancies to install to get things working.
+This whole project assumes you are running on Raspbian, using the RTL-SDR. 
 
 
 
@@ -95,6 +96,16 @@ With contents:
     cd meteor_decoder
     ./build_medet.sh
     sudo cp medet /usr/local/bin/
+
+### rtl_biast:
+
+    git clone https://github.com/rtlsdrblog/rtl_biast
+    cd rtl_biast
+    mkdir build
+    cd build
+    cmake ..
+    make
+    sudo make install
 
 
 Once everything is installed, plug in your RTL-SDR and run rtl_test -t to test that it is functioning properly. Let it warm up because the ppm value is important for later.
