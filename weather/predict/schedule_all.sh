@@ -1,19 +1,19 @@
 #!/bin/bash
-#V 1.0
+#V 1.1
 #Original credit: haslettj
 #Edit for comments/usibility/functionality: TGYK
 
-#Test commit
-#Testing update-checking
 
 #Check for newer updates
 if [ -d /home/pi/rpiWX/.git ]
   then
     if ! git status -uno | grep "up-to-date"
       then
-        echo "Check the schedule_all script for instructions to update!"
+        echo "There are updates available from the github repo!"
+        echo "Check the schedule_all script for instructions to update."
     fi
 fi
+
 #Instructions to update and keep configs:
 #cd /home/pi/rpiWX
 #git stash
