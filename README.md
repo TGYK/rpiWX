@@ -1,6 +1,9 @@
 # rpiWX
 
-Scripts to automagically capture and decode weather satellites
+Scripts to automagically capture and decode NOAA 15, 18, 18 APT and METEOR-M 2 LRPT images.
+
+Original credit for the scripts goes to [haslettj](https://www.instructables.com/member/haslettj/)
+I have used his scripts and heavily modified them for my own use!
 
 These are some poorly written instructions and a list of dependancies to install to get things working.
 This whole project assumes you are running on Raspbian, using the RTL-SDR. 
