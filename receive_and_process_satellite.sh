@@ -15,11 +15,11 @@
 #28.0 29.7 32.8 33.8 36.4 37.2 38.6 40.2 42.1 43.4 43.9 44.5 48.0 49.6
 
 #NOAA gain
-ngain=3.7
+ngain=CHANGEME
 #Meteor gain
-mgain=7.7
+mgain=CHANGEME
 #PPM value to be used by rtl_fm
-ppm=0
+ppm=CHANGEME
 #Meteor raw sampling rate
 meteorrate=120000
 #Meteor downsampling rate
@@ -36,22 +36,22 @@ red=65
 green=65
 blue=64
 #Set to TRUE to enable use of rtl_fm priority setting via nice
-usenice=TRUE
+usenice=FALSE
 #Nice value (-20 through 19) -20 is highest priority, 0 is default
 nicevalue=-15
 #Set to TRUE to enable use of bias tee for LNA power
-biast=TRUE
+biast=FALSE
 #Set to TRUE to enable automatic conversion of bmp to png using imagemagick
-conv=TRUE
+conv=FALSE
 #Set to TRUE to enable removal of raw I/Q file, wav files, and symbol files for space-saving
 #This option leaves all successfully decoded images, and if successful Meteor-M 2 decoding, decoded dump files
 cleanup=FALSE
 #Set to TRUE to enable removal of directory and captured pass if wxtoimg gets a bad pass
 prune=FALSE
 #Set to TRUE to send email with captured pass/details.
-sendemail=TRUE
+sendemail=FALSE
 #Email to send to
-senduser=tgyk@tgyk.net
+senduser=you@youremail.com
 #Directory to make date/time folders for organization
 wdir="/home/pi/weather/"
 
