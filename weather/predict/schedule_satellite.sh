@@ -10,14 +10,14 @@
 deselev=CHANGEME
 
 #Get prediction start/end from TLE files respectively
-PREDICTION_START=`/usr/bin/predict -t /home/pi/weather/predict/weather.tle -p "${1}" | head -1`
-PREDICTION_END=`/usr/bin/predict -t /home/pi/weather/predict/weather.tle -p "${1}" | tail -1`
+PREDICTION_START=`/usr/bin/predict -t /home/pi/rpiWX/weather/predict/weather.tle -p "${1}" | head -1`
+PREDICTION_END=`/usr/bin/predict -t /home/pi/rpiWX/weather/predict/weather.tle -p "${1}" | tail -1`
 
 #Get end time in epoch format
 var2=`echo $PREDICTION_END | cut -d " " -f 1`
 
 #Get maximum elevation from tle file, if elevation is positive
-MAXELEV=`/usr/bin/predict -t /home/pi/weather/predict/weather.tle -p "${1}" | awk -v max=0 '{if($5>max){max=$5}}END{print max}'`
+MAXELEV=`/usr/bin/predict -t /home/pi/rpiWX/weather/predict/weather.tle -p "${1}" | awk -v max=0 '{if($5>max){max=$5}}END{print max}'`
 
 #While current y/m/d is equal to the prediction-end y/m/d, do...
 while [ `date --date="TZ=\"UTC\" @${var2}" +%D` == `date +%D` ]; do
@@ -40,9 +40,9 @@ while [ `date --date="TZ=\"UTC\" @${var2}" +%D` == `date +%D` ]; do
       for var4 in $(atq | sed -e 's/\t/ /g' | cut -d " " -f 1)
         do
           #Get epoch start time for job # from var4 using the scheduled job in the at command and some formatting magic
-          var5=$(at -c $var4 | grep "/home/pi/weather/predict/receive_and_process_satellite.sh" | cut -d " " -f 7)
+          var5=$(at -c $var4 | grep "/home/pi/rpiWX/weather/predict/receive_and_process_satellite.sh" | cut -d " " -f 7)
           #Get epoch pass duration for job # from var4 using the scheduled job in the at command and some formatting magic
-          var6=$(at -c $var4 | grep "/home/pi/weather/predict/receive_and_process_satellite.sh" | cut -d " " -f 8)
+          var6=$(at -c $var4 | grep "/home/pi/rpiWX/weather/predict/receive_and_process_satellite.sh" | cut -d " " -f 8)
           #Get the difference in time between scheduled at job and proposed at job
           diff=`expr $var5 - $var1`
           #Debugging output
@@ -70,16 +70,16 @@ while [ `date --date="TZ=\"UTC\" @${var2}" +%D` == `date +%D` ]; do
         echo "$1 at elevation $MAXELEV at $(date --date="@$var1" +"%-I:%M%^p %m/%d/%Y") scheduled"
         #Schedule the at job to call receive_and_process_satellite.sh with necessary arguments
         #Also kill output garbage from at command by stdout and stderr to /dev/null
-        echo "/home/pi/weather/predict/receive_and_process_satellite.sh \"${1}\" $2 /home/pi/weather/${1//" "}${OUTDATE} /home/pi/weather/predict/weather.tle $var1 $TIMER $MAXELEV" | at `date --date="TZ=\"UTC\" $START_TIME" +"%H:%M %D"` > /dev/null 2>&1
+        echo "/home/pi/rpiWX/weather/predict/receive_and_process_satellite.sh \"${1}\" $2 /home/pi/rpiWX/weather/${1//" "}${OUTDATE} /home/pi/rpiWX/weather/predict/weather.tle $var1 $TIMER $MAXELEV" | at `date --date="TZ=\"UTC\" $START_TIME" +"%H:%M %D"` > /dev/null 2>&1
     fi
   fi
   #Add 60 seconds to get the next prediction for this satellite today
   nextpredict=`expr $var2 + 60`
   #Get new prediction start/end values from TLE files resspectively
-  PREDICTION_START=`/usr/bin/predict -t /home/pi/weather/predict/weather.tle -p "${1}" $nextpredict | head -1`
-  PREDICTION_END=`/usr/bin/predict -t /home/pi/weather/predict/weather.tle -p "${1}"  $nextpredict | tail -1`
+  PREDICTION_START=`/usr/bin/predict -t /home/pi/rpiWX/weather/predict/weather.tle -p "${1}" $nextpredict | head -1`
+  PREDICTION_END=`/usr/bin/predict -t /home/pi/rpiWX/weather/predict/weather.tle -p "${1}"  $nextpredict | tail -1`
   #Get new max elevation from new predictions.
-  MAXELEV=`/usr/bin/predict -t /home/pi/weather/predict/weather.tle -p "${1}" $nextpredict | awk -v max=0 '{if($5>max){max=$5}}END{print max}'`
+  MAXELEV=`/usr/bin/predict -t /home/pi/rpiWX/weather/predict/weather.tle -p "${1}" $nextpredict | awk -v max=0 '{if($5>max){max=$5}}END{print max}'`
   #Get new end time in epoch
   var2=`echo $PREDICTION_END | cut -d " " -f 1`
   #DO IT AGAIN (If today is still today, and not tomorrow)
