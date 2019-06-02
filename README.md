@@ -108,15 +108,15 @@ With contents:
     sudo make install
 
 
-Once everything is installed, plug in your RTL-SDR and run rtl_test -t to test that it is functioning properly. Let it warm up because the ppm value is important for later.
+Once everything is installed, plug in your RTL-SDR and run `rtl_test -t` to test that it is functioning properly. Let it warm up because the ppm value is important for later.
 
-Set up predict by running it for the first time with the command `predict` enter long/lat accordingly. Predict uses north-positive and WEST-positive. Google maps supplies north-positive and EAST-positive. Keep this in mind and do the math.
+Set up predict by running it for the first time with the command `predict` enter long/lat accordingly. Predict uses north-positive and **WEST-positive**. Google maps supplies north-positive and **EAST-positive**. Keep this in mind and do the math.
 
-Run wxtoimg using "wxtoimg" and accept the ToS. Make sure to have created the file at `~/.wxtoimgrc` with your lat/lon EAST-positive.
+Run wxtoimg using "wxtoimg" and accept the ToS. Make sure to have created the file at `~/.wxtoimgrc` with your lat/lon **EAST-positive**.
 
 Place the three scripts in `~/weather/predict/` and enable execution on them with `sudo chmod +x <scriptname>`
 
-Make a cron job with "crontab -e" and add the following line:
+Make a cron job with `crontab -e` and add the following line:
 
     1 0 * * * /home/pi/weather/predict/schedule_all.sh
 
