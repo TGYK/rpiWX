@@ -1,4 +1,5 @@
 #!/bin/bash
+#V 1.0
 #Original credit: haslettj
 #Edit for comments/usibility/functionality: TGYK
 
@@ -165,10 +166,10 @@ if [ "${1}"  != "METEOR-M 2" ]
         #Use wxtoimg to decode the image, use HVC enhancement
         /usr/local/bin/wxtoimg -m ${3}-map.png -e HVC $3.wav $3-HVC.png
 
-        #If enabled, send an email with the pictures attached, only on successful capture.
+        #If enabled, send an email with the pictures attached, only on successful capture
         if [ "$sendemail" == "TRUE" ]
           then
-            #Send the email.
+            #Send the email, only send 2 interesting imgages due to email filesize limits
             mail -s $3 -A $3-MCIR.png -A $3-MSA.png $senduser < $3.txt
         fi
     else
