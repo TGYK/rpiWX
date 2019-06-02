@@ -60,6 +60,7 @@ wdir="/home/pi/weather/"
 #Get current date/time for folder structure
 date=`date +%-m-%-d-%Y`
 curtime=`date +%-I:%M%^p`
+#Epoch time + pass time used to correct the timestamp on NOAA passes so the map lines up
 correctiontime=$(date --date="@`expr $6 + $5`" +%Y%m%d%H%M.%S)
 
 
@@ -209,7 +210,7 @@ else
         fi
     fi
     #If email sending is enabled, send an email!
-    if [ "$sendmail" == "TRUE" ]
+    if [ "$sendemail" == "TRUE" ]
       then
         #Check for successful decoding first
         if [ -e $3.bmp ]
