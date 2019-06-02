@@ -48,7 +48,7 @@ conv=FALSE
 cleanup=FALSE
 #Set to TRUE to enable removal of directory and captured pass if wxtoimg gets a bad pass
 prune=FALSE
-#Set to TRUE to send email with captured pass/details.
+#Set to TRUE to send email with captured pass/details. This assumes you have the mail client configured to an email address
 sendemail=FALSE
 #Email to send to
 senduser=you@youremail.com
