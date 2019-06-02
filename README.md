@@ -101,4 +101,7 @@ Place the three scripts in ~/weather/predict/ and enable execution on them with 
 Make a cron job with "crontab -e" and add the following line:
 1 0 * * * /home/pi/weather/predict/schedule_all.sh
 
+Modify the receive_and_process_satellite.sh script to add your gain values, etc
+Modify the schedule_satellite.sh script to add your desired elevation
+
 Optionally, you can kick things off with: /home/pi/weather/predict/schedule_all.sh
