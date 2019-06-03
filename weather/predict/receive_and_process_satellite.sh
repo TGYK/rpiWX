@@ -173,7 +173,7 @@ if [ "${1}"  != "METEOR-M 2" ]
         #If bad capture detected, state that for the record
         echo "Narrow IF band detected, or no Telemetry data found! Was there a good pass?"
         #If pruning is enabled, delete the directory and current pass
-        if [ "$prune" == true ]
+        if [ "$prune" == TRUE ]
           then
             rm -rf $wdir$date/$curtime
             rm $3*
@@ -223,10 +223,18 @@ fi
 #Perform cleanup if enabled
 if [ "$cleanup" == "TRUE" ]
   then
+    if [ -e $3*.raw ]
+      then
+        rm $3*.raw
+    elif [ -e $3*.s ]
+      then
+        rm $3*.s
+    fi
     rm $3*.wav
-    rm $3*.raw
-    rm $3*.s
 fi
 
 #Move all files to their folders.
-mv "$3"* "$wdir$date"/"$curtime"/
+if [ -e $3* ]
+  then
+    mv "$3"* "$wdir$date"/"$curtime"/
+fi
