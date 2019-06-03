@@ -61,9 +61,6 @@ wdir="/home/pi/rpiWX/weather/"
 #Get current date/time for folder structure
 date=`date +%-m-%-d-%Y`
 curtime=`date +%-I:%M%^p`
-#Epoch time + pass time used to correct the timestamp on NOAA passes so the map lines upp
-correctiontime=$(date --date="@`expr $6 + $5`" +%Y%m%d%H%M.%S)
-
 
 #Create file for past-the-fact reference of details for image analysis
 echo "Satellite: $1" > $3.txt
@@ -127,7 +124,7 @@ if [ "${1}" != "METEOR-M 2" ]
     #Use sox to downsample to $noaadownrate for wxtoimg
     sox -t wav $3-$noaarate.wav $3.wav rate $noaadownrate
     #Correct the timestamp for the pass duration so map lines up
-    touch -t $correctiontime $3.wav
+    touch -r $3-$noaarate.wav $3.wav
   else
     if [ "$usenice" == "TRUE" ]
       then
