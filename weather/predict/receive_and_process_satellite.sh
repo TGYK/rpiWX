@@ -234,7 +234,7 @@ if [ "$cleanup" == "TRUE" ]
 fi
 
 #Move all files to their folders.
-if [ -e $3* ]
-  then
+#if [ -e $3* ]
+#  then
     mv "$3"* "$wdir$date"/"$curtime"/
-fi
+#fi
