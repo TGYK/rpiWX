@@ -1,5 +1,5 @@
 #!/bin/bash
-#V 1.1
+#V 1.2
 #Original credit: haslettj
 #Edit for comments/usibility/functionality: TGYK
 
@@ -22,7 +22,7 @@ mgain=CHANGEME
 #PPM value to be used by rtl_fm
 ppm=CHANGEME
 #Meteor raw sampling rate
-meteorrate=120000
+meteorrate=1080000
 #Meteor downsampling rate
 meteordownrate=120000
 #NOAA raw sampling rate
@@ -111,10 +111,10 @@ if [ "${1}" != "METEOR-M 2" ]
     if [ "$usenice" == "TRUE" ]
       then
         #Capture for $6 seconds at $2 MHz at $noaarate bandwidth with gain of $ngain in wav format FM demodulated and de-emphasis filtered, save to $3-$noaarate.wav
-        sudo timeout $6 nice -n $nicevalue rtl_fm -f ${2}M -s $noaarate -g $ngain -p $ppm -E wav -E deemp -F 9 -M fm $3-$noaarate.wav
+        timeout $6 nice -n $nicevalue /usr/local/bin/rtl_fm -f ${2}M -s $noaarate -g $ngain -p $ppm -E wav -E deemp -F 9 -M fm $3-$noaarate.wav
       else
         #Capture for $6 seconds at $2 MHz at $noaarate bandwidth with gain of $ngain in wav format FM demodulated and de-emphasis filtered, save to $3-$noaarate.wav
-        sudo timeout $6 rtl_fm -f ${2}M -s $noaarate -g $ngain -p $ppm -E wav -E deemp -F 9 -M fm $3-$noaarate.wav
+        timeout $6 /usr/local/bin/rtl_fm -f ${2}M -s $noaarate -g $ngain -p $ppm -E wav -E deemp -F 9 -M fm $3-$noaarate.wav
     fi
     #Turn off bias tee before converting audio if bias tee was enabled
     if [ "$biast" == "TRUE" ]
@@ -126,20 +126,20 @@ if [ "${1}" != "METEOR-M 2" ]
     #Correct the timestamp for the pass duration so map lines up
     touch -r $3-$noaarate.wav $3.wav
   else
+    #Use nice if enabled to set process priority
     if [ "$usenice" == "TRUE" ]
       then
-        sudo timeout $6 nice -n $nicevalue rtl_fm -f ${2}M -s $meteorrate -g $mgain -p $ppm -M raw $3-$meteorrate.raw
+        #Capture for $6 seconds, using nice value $nicevalue to run rtl_fm at $2 MHz at $meteorrate bandwidth with gain of $mgain in raw IQ format, pipe to sox for wav conversion and downsample, save to $3-$meteordownrate.wav
+        timeout $6 nice -n $nicevalue /usr/local/bin/rtl_fm -f ${2}M -s $meteorrate -g $mgain -p $ppm -F 9 -M raw | sox -t raw -r $meteorrate -c 2 -b 16 -e s - -t wav $3-$meteordownrate.wav rate $meteordownrate
       else
-        #Capture for $6 seconds at $2 MHz at $meteorrate bandwidth with gain of $mgain in raw IQ format, save to $3-$meteorrate.raw
-        sudo timeout $6 rtl_fm -f ${2}M -s $meteorrate -g $mgain -p $ppm -M raw $3-$meteorrate.raw
+        #Capture for $6 seconds at $2 MHz at $meteorrate bandwidth with gain of $mgain in raw IQ format, pipe to sox for wav conversion and downsample, save to $3-$meteordownrate.wav
+        timeout $6 /usr/local/bin/rtl_fm -f ${2}M -s $meteorrate -g $mgain -p $ppm -F 9 -M raw | sox -t raw -r $meteorrate -c 2 -b 16 -e s - -t wav $3-$meteordownrate.wav rate $meteordownrate
     fi
     #Turn off bias tee before converting audio if bias tee was enabled
     if [ "$biast" == "TRUE" ]
       then
         /usr/local/bin/rtl_biast -b 0
     fi
-    #Convert from raw IQ to wav format, and downsample to $meteordownrate
-    sox -t raw -r $meteorrate -c 2 -b 16 -e s $3-$meteorrate.raw -t wav $3-$meteordownrate.wav rate $meteordownrate
     #Amplify the signal so it can be QPSK demodulated later. Use the wav from above at 98% volume to prevent dithering.
     sox -v 0.98 $3-$meteordownrate.wav $3.wav gain -n
 fi
@@ -150,7 +150,7 @@ if [ "${1}"  != "METEOR-M 2" ]
     #Some maths to make the map overlay line up properly
     PassStart=`expr $5 + 90`
     #Make the overlay map from the TLE file and times
-    /usr/local/bin/wxmap -T "${1}" -H $4 -p 0 -l 0 -o $PassStart ${3}-map.png
+    /usr/local/bin/wxmap -T "${1}" -H $4 -M 1 -p 0 -l 0 -o $PassStart ${3}-map.png
     #Detect if image decoding was "good" and make ZA enhancement image
     if ! /usr/local/bin/wxtoimg -m ${3}-map.png -e ZA $3.wav $3-ZA.png 2>&1 | grep "warning: couldn't find telemetry data\|warning: Narrow IF"
       then
@@ -223,18 +223,21 @@ fi
 #Perform cleanup if enabled
 if [ "$cleanup" == "TRUE" ]
   then
-    if [ -e $3*.raw ]
+    #Check if .s files exist and name begins with $3
+    if ls $3*.s 1> /dev/null 2>&1
       then
-        rm $3*.raw
-    elif [ -e $3*.s ]
-      then
+        #Remove the files!
         rm $3*.s
+    #Check if .wav files exist and name begins with $3
+    elif ls $3*.wav 1> /dev/null 2>&1
+      then
+        #Remove the files!
+        rm $3*.wav
     fi
-    rm $3*.wav
 fi
 
-#Move all files to their folders.
-#if [ -e $3* ]
-#  then
+#Move all files to their folders, if they weren't cleaned via prune/cleanup
+if ls $3* 1> /dev/null 2>&1
+  then
     mv "$3"* "$wdir$date"/"$curtime"/
-#fi
+fi
