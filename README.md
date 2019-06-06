@@ -50,7 +50,7 @@ With contents:
 
 ## Wget
 
-#### wxtoimg:
+#### [wxtoimg](https://wxtoimgrestored.xyz/):
 
     cd ~
     wget https://wxtoimgrestored.xyz/beta/wxtoimg-armhf-2.11.2-beta.deb
@@ -58,7 +58,7 @@ With contents:
 
 ## Gits
 
-#### rtl-sdr:
+#### [rtl-sdr](https://github.com/keenerd/rtl-sdr):
 
     git clone https://github.com/keenerd/rtl-sdr.git
     cd rtl-sdr/
@@ -72,7 +72,7 @@ With contents:
 
 
 
-#### meteor_demod:
+#### [meteor_demod](https://github.com/dbdexter-dev/meteor_demod):
 
     git clone https://github.com/dbdexter-dev/meteor_demod.git
     cd meteor_demod
@@ -80,16 +80,16 @@ With contents:
     sudo make install
 
 
-#### medet:
+#### [medet](https://github.com/artlav/meteor_decoder):
 
     git clone https://github.com/artlav/meteor_decoder.git
     cd meteor_decoder
     ./build_medet.sh
     sudo cp medet /usr/local/bin/
 
-#### rtl_biast:
+#### [rtl_biast](https://github.com/rtlsdrblog/rtl_biast):
 
-    git clone https://github.com/rtlsdrblog/rtl_biast
+    git clone https://github.com/rtlsdrblog/rtl_biast.git
     cd rtl_biast
     mkdir build
     cd build
@@ -99,11 +99,22 @@ With contents:
 
 #### rpiWX
 
-    git clone https://github.com/TGYK/rpiWX
-    cd rpiWX
-    cp weather ~/
-    cd ~/weather/predict
+    git clone https://github.com/TGYK/rpiWX.git
+    cd rpiWX/weather/predict
     sudo chmod +x *.sh
+
+#### [meteor_rectify](https://github.com/TGYK/meteor_rectify) (Optional)
+
+##### Assumes you have python3 already installed
+
+###### Be sure to enable in receive_and_process_satellite.sh!
+
+    git clone https://github.com/TGYK/meteor_rectify.git
+    cd meteor_rectify
+    cp rectify.py ../rpiWX/weather/predict
+    pip3 install pillow
+    pip3 install numpy
+
 
 Once everything is installed, reboot and plug in your RTL-SDR and run `rtl_test -t` to test that it is functioning properly. Let it warm up for 10-15 minutes and make a note of the average ppm error value for configuration later.
 
@@ -116,7 +127,10 @@ Make a cron job with `crontab -e` and add the following line:
     1 0 * * * /home/pi/weather/predict/schedule_all.sh
 
 Modify the receive_and_process_satellite.sh script to add your gain values, ppm error, etc
-Modify the schedule_satellite.sh script to add your desired elevation
+
+Modify the schedule_satellite.sh script to add your desired elevation and directory if needed
+
+Modify the schedule_all script to add your directory if needed
 
 Optionally, you can kick things off with:
 

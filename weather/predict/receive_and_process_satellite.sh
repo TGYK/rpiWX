@@ -1,5 +1,5 @@
 #!/bin/bash
-#V 1.2
+#V 1.3
 #Original credit: haslettj
 #Edit for comments/usibility/functionality: TGYK
 
@@ -44,6 +44,8 @@ nicevalue=-15
 biast=FALSE
 #Set to TRUE to enable automatic conversion of bmp to png using imagemagick
 conv=FALSE
+#Set to TRUE to use dbdexter's script to remove geometric distortion from captured Meteor images
+rectify=FALSE
 #Set to TRUE to enable removal of raw I/Q file, wav files, and symbol files for space-saving
 #This option leaves all successfully decoded images, and if successful Meteor-M 2 decoding, decoded dump files
 cleanup=FALSE
@@ -55,7 +57,8 @@ sendemail=FALSE
 senduser=you@youremail.com
 #Directory to make date/time folders for organization
 wdir="/home/pi/rpiWX/weather/"
-
+#Directory where dbdexter's rectify.py script lives
+rdir="/home/pi/rpiWX/weather/predict"
 
 
 #Get current date/time for folder structure
@@ -192,6 +195,11 @@ else
           then
             #Convert!
             convert $3.bmp $3.png
+            #If smoothing is enabled, then use the script to do so!
+            if [ "$rectify" == "TRUE" ]
+              then
+                python3 $rdir/rectify.py $3.png
+            fi
           else
             #If no successful decoding was found, state why there wasn't a conversion
             echo "No BMP generated from medet, not converting! Was there a good capture?"
@@ -203,11 +211,16 @@ else
         #Check for successful decoding first
         if [ -e $3.bmp ]
           then
-            #Check to see if the file got converted. Only one image to send this way
+            #Check to see if the file got converted/smoothed. Only one image to send this way
             if [ "$conv" == "TRUE" ]
               then
-                #Send png if conversion is enabled
-                mail -s $3 -A $3.png $senduser < $3.txt
+                if [ "$rectify" == "TRUE" ]
+                  then
+                    mail -s $3 -A $3-rectified.png $senduser < $3.txt
+                  else
+                    #Send png if conversion is enabled
+                    mail -s $3 -A $3.png $senduser < $3.txt
+                fi
             else
                 #Send bmp is conversion is not enabled
                 mail -s $3 -A $3.bmp $senduser < $3.txt
@@ -228,8 +241,9 @@ if [ "$cleanup" == "TRUE" ]
       then
         #Remove the files!
         rm $3*.s
+    fi
     #Check if .wav files exist and name begins with $3
-    elif ls $3*.wav 1> /dev/null 2>&1
+    if ls $3*.wav 1> /dev/null 2>&1
       then
         #Remove the files!
         rm $3*.wav
