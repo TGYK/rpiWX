@@ -124,7 +124,7 @@ Run wxtoimg using "wxtoimg" and accept the ToS. Make sure to have created the fi
 
 Make a cron job with `crontab -e` and add the following line:
 
-    1 0 * * * /home/pi/weather/predict/schedule_all.sh
+    1 0 * * * /home/pi/rpiWX/weather/predict/schedule_all.sh
 
 Modify the receive_and_process_satellite.sh script to add your gain values, ppm error, etc
 
@@ -134,4 +134,4 @@ Modify the schedule_all script to add your directory if needed
 
 Optionally, you can kick things off with:
 
-    /home/pi/weather/predict/schedule_all.sh
+    /home/pi/rpiWX/weather/predict/schedule_all.sh
