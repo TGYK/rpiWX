@@ -116,7 +116,7 @@ With contents:
     pip3 install numpy
 
 
-Once everything is installed, reboot and plug in your RTL-SDR and run `rtl_test -t` to test that it is functioning properly. Let it warm up for 10-15 minutes and make a note of the average ppm error value for configuration later.
+Once everything is installed, reboot and plug in your RTL-SDR and run `rtl_test -p` to test that it is functioning properly. Let it warm up for 10-15 minutes and make a note of the average ppm error value for configuration later.
 
 Set up predict by running it for the first time with the command `predict` enter long/lat accordingly. Predict uses north-positive and **WEST-positive**. Google maps supplies north-positive and **EAST-positive**. Keep this in mind and do the math.
 
