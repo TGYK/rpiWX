@@ -103,13 +103,13 @@ With contents:
     cd rpiWX/weather/predict
     sudo chmod +x *.sh
 
-#### [meteor_rectify](https://github.com/TGYK/meteor_rectify) (Optional)
+#### [meteor_rectify](https://github.com/dbdexter/meteor_rectify) (Optional)
 
 ##### Assumes you have python3 already installed
 
-###### Be sure to enable in receive_and_process_satellite.sh!
+##### Be sure to enable in receive_and_process_satellite.sh!
 
-    git clone https://github.com/TGYK/meteor_rectify.git
+    git clone https://github.com/dbdexter/meteor_rectify.git
     cd meteor_rectify
     cp rectify.py ../rpiWX/weather/predict
     pip3 install pillow

@@ -1,10 +1,10 @@
 #!/bin/bash
-#V 1.3
+#V 1.4
 #Original credit: haslettj
 #Edit for comments/usibility/functionality: TGYK
 
 #Root directory where the scripts live. The other two shell scripts will be blah/weather
-#This is used to detect if you are using the default git clone directory (recommended to get notification of updates)
+#Root directory of project. This is used to detect if you are using the default git clone directory (recommended to get notification of updates)
 rdir="/home/pi/rpiWX"
 #Weather directory (Where the script files live if you're not using the default git clone directory)
 wdir="/home/pi/rpiWX/weather"

@@ -1,5 +1,5 @@
 #!/bin/bash
-#V 1.3
+#V 1.4
 #Original credit: haslettj
 #Edit for comments/usibility/functionality: TGYK
 
@@ -10,6 +10,11 @@
 # $5 = EPOC start time
 # $6 = Time to capture
 # $7 = Elevation
+
+##TODO##
+# Debug rtl_fm capture dropouts
+# Callback command?
+
 
 #Common R820T supported gain values:
 #0.0 0.9 1.4 2.7 3.7 7.7 8.7 12.5 14.4 15.7 16.6 19.7 20.7 22.9 25.4
@@ -26,7 +31,7 @@ meteorrate=1080000
 #Meteor downsampling rate
 meteordownrate=120000
 #NOAA raw sampling rate
-noaarate=60000
+noaarate=68000
 #NOAA downsampling rate
 noaadownrate=11025
 #PLL factor for Meteor demodulation
@@ -59,7 +64,6 @@ senduser=you@youremail.com
 wdir="/home/pi/rpiWX/weather/"
 #Directory where dbdexter's rectify.py script lives
 rdir="/home/pi/rpiWX/weather/predict"
-
 
 #Get current date/time for folder structure
 date=`date +%-m-%-d-%Y`
@@ -143,7 +147,7 @@ if [ "${1}" != "METEOR-M 2" ]
       then
         /usr/local/bin/rtl_biast -b 0
     fi
-    #Amplify the signal so it can be QPSK demodulated later. Use the wav from above at 98% volume to prevent dithering.
+    #Amplify the signal so it can be QPSK demodulated later. Use the wav from above at 98% volume to prevent dither clipping.
     sox -v 0.98 $3-$meteordownrate.wav $3.wav gain -n
 fi
 
@@ -157,7 +161,7 @@ if [ "${1}"  != "METEOR-M 2" ]
     #Detect if image decoding was "good" and make ZA enhancement image
     if ! /usr/local/bin/wxtoimg -m ${3}-map.png -e ZA $3.wav $3-ZA.png 2>&1 | grep "warning: couldn't find telemetry data\|warning: Narrow IF"
       then
-        #Use wxtoimg to decode the image, use MSA-precip enhancement
+        #Use wxtoimg to decode the image, use MSA enhancement
         /usr/local/bin/wxtoimg -m ${3}-map.png -e MSA $3.wav $3-MSA.png
         #Use wxtoimg to decode the image, use MCIR enhancement
         /usr/local/bin/wxtoimg -m ${3}-map.png -e MCIR $3.wav $3-MCIR.png
@@ -185,7 +189,7 @@ if [ "${1}"  != "METEOR-M 2" ]
 else
     #Use meteor_demod to QPSK demodulate the downsampled iq file into symbols. PLL rate of $pll, bandwidth of $meteordownrate
     /usr/bin/meteor_demod -B -q -b $pll -s $meteordownrate -r 72000 -o $3.s $3.wav
-    #Use medet to decode the symbol files into an image. Split images into seperate channels and composite, make stat file as well.
+    #Use medet to decode the symbol files into an image.
     /usr/local/bin/medet $3.s $3 -cd -q -r $red -g $green -b $blue
     #If conversion is enabled, then convert!
     if [ "$conv" == "TRUE" ]
@@ -216,6 +220,7 @@ else
               then
                 if [ "$rectify" == "TRUE" ]
                   then
+                    #Send rectified png if conversion is enabled and rectification is enabled
                     mail -s $3 -A $3-rectified.png $senduser < $3.txt
                   else
                     #Send png if conversion is enabled
