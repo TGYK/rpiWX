@@ -57,8 +57,8 @@ while [ `date --date="TZ=\"UTC\" @${var2}" +%D` == `date +%D` ]; do
               #Print explaination of disallowance for scheduling
               echo "++++"
               echo "Warning: Job for $1 disallowed to be scheduled due to overlap in pass time"
-              echo "Warning: Proposed start time : $(date --date="@$var1" +"%I:%M:%S%^p %m/%d/%Y")"
-              echo "Warning: Conflicting job already scheduled : $(date --date="@$var5" +"%I:%M:%S%^p %m/%d/%Y")"
+              echo "Warning: Proposed start time : $(date --date="@$var1" +"%I:%M:%^p %m/%d/%Y")"
+              echo "Warning: Conflicting job already scheduled : $(date --date="@$var5" +"%I:%M:%^p %m/%d/%Y")"
           fi
       done
     #If the difference has always been greater than the pass time of previously scheduled jobs, hurrah! Allow the job to be scheduled.
@@ -66,7 +66,7 @@ while [ `date --date="TZ=\"UTC\" @${var2}" +%D` == `date +%D` ]; do
       then
         #Echo job info for the record
         echo "===="
-        echo "$1 at elevation $MAXELEV at $(date --date="@$var1" +"%-I:%M:%S%^p %m/%d/%Y") scheduled"
+        echo "$1 at elevation $MAXELEV at $(date --date="@$var1" +"%-I:%M:%^p %m/%d/%Y") scheduled"
         #Schedule the at job to call receive_and_process_satellite.sh with necessary arguments
         #Also kill output garbage from at command by stdout and stderr to /dev/null
         if [ "$quiet" == "TRUE" ]
