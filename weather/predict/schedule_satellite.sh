@@ -57,8 +57,8 @@ while [ `date --date="TZ=\"UTC\" @${var2}" +%D` == `date +%D` ]; do
               #Print explaination of disallowance for scheduling
               echo "++++"
               echo "Warning: Job for $1 disallowed to be scheduled due to overlap in pass time"
-              echo "Warning: Proposed start time : $(date --date="@$var1" +"%I:%M:%^p %m/%d/%Y")"
-              echo "Warning: Conflicting job already scheduled : $(date --date="@$var5" +"%I:%M:%^p %m/%d/%Y")"
+              echo "Warning: Proposed start time : $(date --date="@$var1" +"%-I:%M:%^p %m/%d/%Y")"
+              echo "Warning: Conflicting job already scheduled : $(date --date="@$var5" +"%-I:%M:%^p %m/%d/%Y")"
           fi
       done
     #If the difference has always been greater than the pass time of previously scheduled jobs, hurrah! Allow the job to be scheduled.
