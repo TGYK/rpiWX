@@ -1,5 +1,5 @@
 #!/bin/bash
-#V 1.4
+#V 1.5
 #Original credit: haslettj
 #Edit for comments/usibility/functionality: TGYK
 
@@ -14,12 +14,15 @@
 ##TODO##
 # Debug rtl_fm capture dropouts
 # Callback command?
-
+# wxproj projection postprocessing script?
+# Instructions for upgrade key in README?
+# Use list of enhancements to email instead of hard-coded values
+# Use seperate config file for all three scripts
+# Support uploading to imgur/similar site and send link instead?
 
 #Common R820T supported gain values:
 #0.0 0.9 1.4 2.7 3.7 7.7 8.7 12.5 14.4 15.7 16.6 19.7 20.7 22.9 25.4
 #28.0 29.7 32.8 33.8 36.4 37.2 38.6 40.2 42.1 43.4 43.9 44.5 48.0 49.6
-
 #NOAA gain
 ngain=CHANGEME
 #Meteor gain
@@ -27,11 +30,11 @@ mgain=CHANGEME
 #PPM value to be used by rtl_fm
 ppm=CHANGEME
 #Meteor raw sampling rate
-meteorrate=1080000
+meteorrate=240000
 #Meteor downsampling rate
 meteordownrate=120000
 #NOAA raw sampling rate
-noaarate=68000
+noaarate=40000
 #NOAA downsampling rate
 noaadownrate=11025
 #PLL factor for Meteor demodulation
@@ -41,6 +44,16 @@ pll=220
 red=65
 green=65
 blue=64
+#Supported enhancements without upgrade:
+#ZA, MB, MD, BD, CC, EC, HE, HF, JF, JJ, LC, TA, WV, WV-old, NO
+#MCIR, MSA, HVC, HVCT, sea, therm, veg, class, contrast, invert, bw
+#Upgrade-only enhancements:
+#MSA-precip, MSA-analglyph, MCIR-precip, MCIR-analglyph, HVCT-precip,
+#HVC-precip, analglyph, canalglyph
+#List of enhancements for wxtoimg to use
+declare -a enhancements=("MB" "MSA" "MCIR" "NO" "HVC")
+#Set to TRUE to enable cropping of telemetry data from wxtoimg images
+crop=FALSE
 #Set to TRUE to enable use of rtl_fm priority setting via nice
 usenice=FALSE
 #Nice value (-20 through 19) -20 is highest priority, 0 is default
@@ -161,15 +174,25 @@ if [ "${1}"  != "METEOR-M 2" ]
     #Detect if image decoding was "good" and make ZA enhancement image
     if ! /usr/local/bin/wxtoimg -m ${3}-map.png -e ZA $3.wav $3-ZA.png 2>&1 | grep "warning: couldn't find telemetry data\|warning: Narrow IF"
       then
-        #Use wxtoimg to decode the image, use MSA enhancement
-        /usr/local/bin/wxtoimg -m ${3}-map.png -e MSA $3.wav $3-MSA.png
-        #Use wxtoimg to decode the image, use MCIR enhancement
-        /usr/local/bin/wxtoimg -m ${3}-map.png -e MCIR $3.wav $3-MCIR.png
-        #Use wxtoimg to decode the image, use NO enhancement
-        /usr/local/bin/wxtoimg -m ${3}-map.png -e NO $3.wav $3-NO.png
-        #Use wxtoimg to decode the image, use HVC enhancement
-        /usr/local/bin/wxtoimg -m ${3}-map.png -e HVC $3.wav $3-HVC.png
-
+        #Remove the ZA enhancement image
+        rm $3-ZA.png
+        #If cropping is enabled, run wxtoimg with -c option
+        if [ "$crop" == "TRUE" ]
+          then
+            #Loop through the array of enhancements, using wxtoimg to make each one, with cropping enabled
+            for enh in ${enhancements[@]}
+              do
+                #Use wxtoimg to decode the image, using list of enhancements
+                /usr/local/bin/wxtoimg -c -m ${3}-map.png -e $enh $3.wav $3-$enh.png
+            done
+          else
+            #Loop through the array of enhancements, using wxtoimg to make each one
+            for enh in ${enhancements[@]}
+              do
+                #Use wxtoimg to decode the image, using list of enhancements
+                /usr/local/bin/wxtoimg -m ${3}-map.png -e $enh $3.wav $3-$enh.png
+        done
+        fi
         #If enabled, send an email with the pictures attached, only on successful capture
         if [ "$sendemail" == "TRUE" ]
           then

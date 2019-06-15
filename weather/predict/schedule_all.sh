@@ -1,5 +1,5 @@
 #!/bin/bash
-#V 1.4
+#V 1.5
 #Original credit: haslettj
 #Edit for comments/usibility/functionality: TGYK
 
