@@ -1,5 +1,5 @@
 #!/bin/bash
-#V 1.5
+#V 1.6
 #Original credit: haslettj
 #Edit for comments/usibility/functionality: TGYK
 
@@ -10,6 +10,7 @@
 # $5 = EPOC start time
 # $6 = Time to capture
 # $7 = Elevation
+# $8 = Transmission Mode
 
 ##TODO##
 # Debug rtl_fm capture dropouts
@@ -19,6 +20,7 @@
 # Use list of enhancements to email instead of hard-coded values
 # Use seperate config file for all three scripts
 # Support uploading to imgur/similar site and send link instead?
+# In overlap of pass scheduling, prefer higher elevation insstead of order priority?
 
 #Common R820T supported gain values:
 #0.0 0.9 1.4 2.7 3.7 7.7 8.7 12.5 14.4 15.7 16.6 19.7 20.7 22.9 25.4
@@ -30,7 +32,7 @@ mgain=CHANGEME
 #PPM value to be used by rtl_fm
 ppm=CHANGEME
 #Meteor raw sampling rate
-meteorrate=240000
+meteorrate=480000
 #Meteor downsampling rate
 meteordownrate=120000
 #NOAA raw sampling rate
@@ -125,7 +127,7 @@ if [ ! -e "$wdir$date/weather.tle" ]
 fi
 
 #Determine if capturing Meteor-M 2 or NOAA, and capture accordingly
-if [ "${1}" != "METEOR-M 2" ]
+if [ "${8}" != "LRPT" ]
   then
     #Use nice if enabled to set process priority
     if [ "$usenice" == "TRUE" ]
@@ -165,7 +167,7 @@ if [ "${1}" != "METEOR-M 2" ]
 fi
 
 #Determine if we are processing Meteor-M 2 or NOAA.
-if [ "${1}"  != "METEOR-M 2" ]
+if [ "${8}"  != "LRPT" ]
   then
     #Some maths to make the map overlay line up properly
     PassStart=`expr $5 + 90`
@@ -183,15 +185,29 @@ if [ "${1}"  != "METEOR-M 2" ]
             for enh in ${enhancements[@]}
               do
                 #Use wxtoimg to decode the image, using list of enhancements
-                /usr/local/bin/wxtoimg -c -m ${3}-map.png -e $enh $3.wav $3-$enh.png
+                wxinfo=$(/usr/local/bin/wxtoimg -c -m ${3}-map.png -e $enh $3.wav $3-$enh.png 2>&1)
+                echo $wxinfo
+                if echo $wxinfo | grep "wxtoimg: warning: enhancement ignored:"
+                  then
+                   echo "Ehnancement not available for this pass. Sensors not available at this time."
+                   echo "Removing $3-$enh.png"
+                   rm $3-$enh.png
+                fi
             done
           else
             #Loop through the array of enhancements, using wxtoimg to make each one
             for enh in ${enhancements[@]}
               do
                 #Use wxtoimg to decode the image, using list of enhancements
-                /usr/local/bin/wxtoimg -m ${3}-map.png -e $enh $3.wav $3-$enh.png
-        done
+                wxinfo=$(/usr/local/bin/wxtoimg -m ${3}-map.png -e $enh $3.wav $3-$enh.png 2>&1)
+                echo $wxinfo
+                if echo $wxinfo | grep "wxtoimg: warning: enhancement ignored:"
+                  then
+                   echo "Ehnancement not available for this pass. Sensors not available at this time."
+                   echo "Removing $3-$enh.png"
+                   rm $3-$enh.png
+                fi
+            done
         fi
         #If enabled, send an email with the pictures attached, only on successful capture
         if [ "$sendemail" == "TRUE" ]

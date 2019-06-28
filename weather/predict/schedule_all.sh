@@ -1,5 +1,5 @@
 #!/bin/bash
-#V 1.5
+#V 1.6
 #Original credit: haslettj
 #Edit for comments/usibility/functionality: TGYK
 
@@ -48,7 +48,7 @@ for i in `atq | awk '{print $1}'`;do atrm $i;done
 
 #Schedule satellite passes with their frequencies, in order of priority:
 
-$wdir/predict/schedule_satellite.sh "METEOR-M 2" 137.9000
-$wdir/predict/schedule_satellite.sh "NOAA 19" 137.1000
-$wdir/predict/schedule_satellite.sh "NOAA 18" 137.9125
-$wdir/predict/schedule_satellite.sh "NOAA 15" 137.6200
+$wdir/predict/schedule_satellite.sh "METEOR-M 2" 137.9000 "LRPT"
+$wdir/predict/schedule_satellite.sh "NOAA 19" 137.1000 "APT"
+$wdir/predict/schedule_satellite.sh "NOAA 18" 137.9125 "APT"
+$wdir/predict/schedule_satellite.sh "NOAA 15" 137.6200 "APT"

@@ -1,10 +1,11 @@
 #!/bin/bash
-#V 1.5
+#V 1.6
 #Original credit: haslettj
 #Edit for comments/usibility/functionality: TGYK
 
 # $1 = Satellite name
-# $2 = frequency
+# $2 = Frequency
+# $3 = Transmission mode
 
 #Set to TRUE to disable "at" command output being mailed to local user
 quiet=FALSE
@@ -71,9 +72,9 @@ while [ `date --date="TZ=\"UTC\" @${var2}" +%D` == `date +%D` ]; do
         #Also kill output garbage from at command by stdout and stderr to /dev/null
         if [ "$quiet" == "TRUE" ]
           then
-            echo "$wdir/predict/receive_and_process_satellite.sh \"${1}\" $2 $wdir/${1//" "}${OUTDATE} $wdir/predict/weather.tle $var1 $TIMER $MAXELEV" | at -M `date --date="TZ=\"UTC\" $START_TIME" +"%H:%M %D"` > /dev/null 2>&1
+            echo "$wdir/predict/receive_and_process_satellite.sh \"${1}\" $2 $wdir/${1//" "}${OUTDATE} $wdir/predict/weather.tle $var1 $TIMER $MAXELEV $3" | at -M `date --date="TZ=\"UTC\" $START_TIME" +"%H:%M %D"` > /dev/null 2>&1
           else
-            echo "$wdir/predict/receive_and_process_satellite.sh \"${1}\" $2 $wdir/${1//" "}${OUTDATE} $wdir/predict/weather.tle $var1 $TIMER $MAXELEV" | at `date --date="TZ=\"UTC\" $START_TIME" +"%H:%M %D"` > /dev/null 2>&1
+            echo "$wdir/predict/receive_and_process_satellite.sh \"${1}\" $2 $wdir/${1//" "}${OUTDATE} $wdir/predict/weather.tle $var1 $TIMER $MAXELEV $3" | at `date --date="TZ=\"UTC\" $START_TIME" +"%H:%M %D"` > /dev/null 2>&1
         fi
     fi
   fi
