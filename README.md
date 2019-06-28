@@ -18,9 +18,7 @@ This whole project assumes you are running on Raspbian, using the RTL-SDR.
     sudo apt-get install sox
     sudo apt-get install at
     sudo apt-get install predict
-    sudo apt-get install fpc
     sudo apt-get install libncurses5-dev libncursesw5-dev  
-    sudo apt-get install imagemagick
     sudo apt-get install git
     
 ### May be needed for wxtoimg to run
@@ -80,14 +78,14 @@ With contents:
     sudo make install
 
 
-#### [medet](https://github.com/artlav/meteor_decoder):
+#### [meteor_decode](https://github.com/dbdexter-dev/meteor_decode):
 
-    git clone https://github.com/artlav/meteor_decoder.git
-    cd meteor_decoder
-    ./build_medet.sh
-    sudo cp medet /usr/local/bin/
+    git clone https://github.com/dbdexter-dev/meteor_decode.git
+    cd meteor_decode
+    make
+    sudo make install
 
-#### [rtl_biast](https://github.com/rtlsdrblog/rtl_biast):
+#### [rtl_biast](https://github.com/rtlsdrblog/rtl_biast) (Optional):
 
     git clone https://github.com/rtlsdrblog/rtl_biast.git
     cd rtl_biast
@@ -102,12 +100,17 @@ With contents:
     git clone https://github.com/TGYK/rpiWX.git
     cd rpiWX/weather/predict
     sudo chmod +x *.sh
+##### To install license key add the following lines to ~/.wxtoimgrc with the proper values: (Optional, unlocks all enhancements. You can find the key on WXtoIMG's restored site.)
+    
+    Registration Name: Firstname Lastname
+    Registration Email: Your@email.com
+    Registration Key: XXXX-XXXX-XXXX-XXXX-XXXX
 
-#### [meteor_rectify](https://github.com/dbdexter-dev/meteor_rectify) (Optional)
+#### [meteor_rectify](https://github.com/dbdexter-dev/meteor_rectify) (Optional):
 
 ##### Assumes you have python3 already installed
 
-##### Be sure to enable in receive_and_process_satellite.sh!
+##### Be sure to enable in config!
 
     git clone https://github.com/dbdexter-dev/meteor_rectify.git
     cd meteor_rectify
@@ -126,11 +129,7 @@ Make a cron job with `crontab -e` and add the following line:
 
     1 0 * * * /home/pi/rpiWX/weather/predict/schedule_all.sh
 
-Modify the receive_and_process_satellite.sh script to add your gain values, ppm error, etc
-
-Modify the schedule_satellite.sh script to add your desired elevation and directory if needed
-
-Modify the schedule_all script to add your directory if needed
+Rename the config file to just "config" and modify with your options.
 
 Optionally, you can kick things off with:
 

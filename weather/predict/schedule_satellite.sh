@@ -1,28 +1,29 @@
-#!/bin/bash
-#V 1.6
+#!/bin/bash#!/bin/bash
+#V 1.8
 #Original credit: haslettj
 #Edit for comments/usibility/functionality: TGYK
+
+###TESTING ENVIRONMENT###
 
 # $1 = Satellite name
 # $2 = Frequency
 # $3 = Transmission mode
 
-#Set to TRUE to disable "at" command output being mailed to local user
-quiet=FALSE
-#Desired elevation to target
-deselev=CHANGEME
-#Directory where the scripts live
-wdir="/home/pi/rpiWX/weather"
+#Get source directory for this script
+srcdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+#Run config script, use values for this script
+. $srcdir/config
+
 
 #Get prediction start/end from TLE files respectively
-PREDICTION_START=`/usr/bin/predict -t $wdir/predict/weather.tle -p "${1}" | head -1`
-PREDICTION_END=`/usr/bin/predict -t $wdir/predict/weather.tle -p "${1}" | tail -1`
+PREDICTION_START=`/usr/bin/predict -t $sdir/weather.tle -p "${1}" | head -1`
+PREDICTION_END=`/usr/bin/predict -t $sdir/weather.tle -p "${1}" | tail -1`
 
 #Get end time in epoch format
 var2=`echo $PREDICTION_END | cut -d " " -f 1`
 
 #Get maximum elevation from tle file, if elevation is positive
-MAXELEV=`/usr/bin/predict -t $wdir/predict/weather.tle -p "${1}" | awk -v max=0 '{if($5>max){max=$5}}END{print max}'`
+MAXELEV=`/usr/bin/predict -t $sdir/weather.tle -p "${1}" | awk -v max=0 '{if($5>max){max=$5}}END{print max}'`
 
 #While current y/m/d is equal to the prediction-end y/m/d, do...
 while [ `date --date="TZ=\"UTC\" @${var2}" +%D` == `date +%D` ]; do
@@ -45,9 +46,9 @@ while [ `date --date="TZ=\"UTC\" @${var2}" +%D` == `date +%D` ]; do
       for var4 in $(atq | sed -e 's/\t/ /g' | cut -d " " -f 1)
         do
           #Get epoch start time for job # from var4 using the scheduled job in the at command and some formatting magic
-          var5=$(at -c $var4 | grep "$wdir/predict/receive_and_process_satellite.sh" | cut -d " " -f 7)
+          var5=$(at -c $var4 | grep "$sdir/receive_and_process_satellite.sh" | cut -d " " -f 7)
           #Get epoch pass duration for job # from var4 using the scheduled job in the at command and some formatting magic
-          var6=$(at -c $var4 | grep "$wdir/predict/receive_and_process_satellite.sh" | cut -d " " -f 8)
+          var6=$(at -c $var4 | grep "$sdir/receive_and_process_satellite.sh" | cut -d " " -f 8)
           #Get the difference in time between scheduled at job and proposed at job
           diff=`expr $var5 - $var1`
           #If the absolute value of the difference in time is less than the pass time of the read already-scheduled job, then...
@@ -67,24 +68,24 @@ while [ `date --date="TZ=\"UTC\" @${var2}" +%D` == `date +%D` ]; do
       then
         #Echo job info for the record
         echo "===="
-        echo "$1 at elevation $MAXELEV at $(date --date="@$var1" +"%-I:%M:%^p %m/%d/%Y") scheduled"
+        echo "$1 at elevation $MAXELEV at $(date --date="@$var1" +"%-I:%M:%^p %m/%d/%Y") scheduled on frequency $2 MHz"
         #Schedule the at job to call receive_and_process_satellite.sh with necessary arguments
         #Also kill output garbage from at command by stdout and stderr to /dev/null
         if [ "$quiet" == "TRUE" ]
           then
-            echo "$wdir/predict/receive_and_process_satellite.sh \"${1}\" $2 $wdir/${1//" "}${OUTDATE} $wdir/predict/weather.tle $var1 $TIMER $MAXELEV $3" | at -M `date --date="TZ=\"UTC\" $START_TIME" +"%H:%M %D"` > /dev/null 2>&1
+            echo "$sdir/receive_and_process_satellite.sh \"${1}\" $2 $wdir/${1//" "}${OUTDATE} $sdir/weather.tle $var1 $TIMER $MAXELEV $3" | at -M `date --date="TZ=\"UTC\" $START_TIME" +"%H:%M %D"` > /dev/null 2>&1
           else
-            echo "$wdir/predict/receive_and_process_satellite.sh \"${1}\" $2 $wdir/${1//" "}${OUTDATE} $wdir/predict/weather.tle $var1 $TIMER $MAXELEV $3" | at `date --date="TZ=\"UTC\" $START_TIME" +"%H:%M %D"` > /dev/null 2>&1
+            echo "$sdir/receive_and_process_satellite.sh \"${1}\" $2 $wdir/${1//" "}${OUTDATE} $sdir/weather.tle $var1 $TIMER $MAXELEV $3" | at `date --date="TZ=\"UTC\" $START_TIME" +"%H:%M %D"` > /dev/null 2>&1
         fi
     fi
   fi
   #Add 60 seconds to get the next prediction for this satellite today
   nextpredict=`expr $var2 + 60`
   #Get new prediction start/end values from TLE files resspectively
-  PREDICTION_START=`/usr/bin/predict -t $wdir/predict/weather.tle -p "${1}" $nextpredict | head -1`
-  PREDICTION_END=`/usr/bin/predict -t $wdir/predict/weather.tle -p "${1}"  $nextpredict | tail -1`
+  PREDICTION_START=`/usr/bin/predict -t $sdir/weather.tle -p "${1}" $nextpredict | head -1`
+  PREDICTION_END=`/usr/bin/predict -t $sdir/weather.tle -p "${1}"  $nextpredict | tail -1`
   #Get new max elevation from new predictions.
-  MAXELEV=`/usr/bin/predict -t $wdir/predict/weather.tle -p "${1}" $nextpredict | awk -v max=0 '{if($5>max){max=$5}}END{print max}'`
+  MAXELEV=`/usr/bin/predict -t $sdir/weather.tle -p "${1}" $nextpredict | awk -v max=0 '{if($5>max){max=$5}}END{print max}'`
   #Get new end time in epoch
   var2=`echo $PREDICTION_END | cut -d " " -f 1`
   #DO IT AGAIN (If today is still today, and not tomorrow)

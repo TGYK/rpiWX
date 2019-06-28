@@ -1,7 +1,12 @@
 #!/bin/bash
-#V 1.6
+#V 1.8
 #Original credit: haslettj
 #Edit for comments/usibility/functionality: TGYK
+
+#Get source directory of this script
+srcdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+#Run the config script, use values for this script
+. $srcdir/config
 
 # $1 = Satellite Name
 # $2 = Frequency
@@ -16,73 +21,16 @@
 # Debug rtl_fm capture dropouts
 # Callback command?
 # wxproj projection postprocessing script?
-# Instructions for upgrade key in README?
 # Use list of enhancements to email instead of hard-coded values
-# Use seperate config file for all three scripts
 # Support uploading to imgur/similar site and send link instead?
 # In overlap of pass scheduling, prefer higher elevation insstead of order priority?
 
-#Common R820T supported gain values:
-#0.0 0.9 1.4 2.7 3.7 7.7 8.7 12.5 14.4 15.7 16.6 19.7 20.7 22.9 25.4
-#28.0 29.7 32.8 33.8 36.4 37.2 38.6 40.2 42.1 43.4 43.9 44.5 48.0 49.6
-#NOAA gain
-ngain=CHANGEME
-#Meteor gain
-mgain=CHANGEME
-#PPM value to be used by rtl_fm
-ppm=CHANGEME
-#Meteor raw sampling rate
-meteorrate=480000
-#Meteor downsampling rate
-meteordownrate=120000
-#NOAA raw sampling rate
-noaarate=40000
-#NOAA downsampling rate
-noaadownrate=11025
-#PLL factor for Meteor demodulation
-pll=220
-#R/G/B values to be used by medet
-#65,65,64 creates a really nice false-color image
-red=65
-green=65
-blue=64
-#Supported enhancements without upgrade:
-#ZA, MB, MD, BD, CC, EC, HE, HF, JF, JJ, LC, TA, WV, WV-old, NO
-#MCIR, MSA, HVC, HVCT, sea, therm, veg, class, contrast, invert, bw
-#Upgrade-only enhancements:
-#MSA-precip, MSA-analglyph, MCIR-precip, MCIR-analglyph, HVCT-precip,
-#HVC-precip, analglyph, canalglyph
-#List of enhancements for wxtoimg to use
-declare -a enhancements=("MB" "MSA" "MCIR" "NO" "HVC")
-#Set to TRUE to enable cropping of telemetry data from wxtoimg images
-crop=FALSE
-#Set to TRUE to enable use of rtl_fm priority setting via nice
-usenice=FALSE
-#Nice value (-20 through 19) -20 is highest priority, 0 is default
-nicevalue=-15
-#Set to TRUE to enable use of bias tee for LNA power
-biast=FALSE
-#Set to TRUE to enable automatic conversion of bmp to png using imagemagick
-conv=FALSE
-#Set to TRUE to use dbdexter's script to remove geometric distortion from captured Meteor images
-rectify=FALSE
-#Set to TRUE to enable removal of raw I/Q file, wav files, and symbol files for space-saving
-#This option leaves all successfully decoded images, and if successful Meteor-M 2 decoding, decoded dump files
-cleanup=FALSE
-#Set to TRUE to enable removal of directory and captured pass if wxtoimg gets a bad pass
-prune=FALSE
-#Set to TRUE to send email with captured pass/details. This assumes you have the mail client configured to an email address
-sendemail=FALSE
-#Email to send to
-senduser=you@youremail.com
-#Directory to make date/time folders for organization
-wdir="/home/pi/rpiWX/weather/"
-#Directory where dbdexter's rectify.py script lives
-rdir="/home/pi/rpiWX/weather/predict"
-
 #Get current date/time for folder structure
-date=`date +%-m-%-d-%Y`
-curtime=`date +%-I:%M%^p`
+yr=`date +%Y`
+mo=`date +%-m`
+day=`date +%-d`
+
+curtime=`date +%-I-%M%^p`
 
 #Create file for past-the-fact reference of details for image analysis
 echo "Satellite: $1" > $3.txt
@@ -91,13 +39,19 @@ echo "Pass start time: $curtime" >> $3.txt
 echo "Pass start epoch time: $5" >> $3.txt
 echo "Pass duration: $(date --date="@$6" +"%M minutes, %S  seconds")" >> $3.txt
 echo "Pass elevation: $7" >> $3.txt
-if [ "${1}" == "METEOR-M 2" ]
+if [ "${1}" == "METEOR-M 2" ] || [ "${1}" == "METEOR-M2 2" ]
   then
     echo "Gain used by rtl_fm: $mgain" >> $3.txt
-    echo "Sample rate of raw wav file: $meteorrate" >> $3.txt
-    echo "Sample rate used to downsample and process: $meteordownrate" >> $3.txt
-    echo "Pll value used for QPSK demodulation: $pll" >> $3.txt
-    echo "RGB values used in generation of image: R-$red G-$green B-$blue" >> $3.txt
+    echo "Sample rate of raw wav file: $lrptrate" >> $3.txt
+    echo "Sample rate used to downsample and process: $lrptdownrate" >> $3.txt
+    if [ "${1}" == "METEOR-M 2" ]
+      then
+        echo "Pll value used for QPSK demodulation: $pll" >> $3.txt
+        echo "RGB values used in generation of image: R-$red G-$green B-$blue" >> $3.txt
+    else
+        echo "Pll value used for QPSK demodulation: $pll2" >> $3.txt
+        echo "RGB values used in generation of image: R-$red2 G-$green2 B-$blue2" >> $3.txt
+    fi
   else
     echo "Gain used by rtl_fm: $ngain" >> $3.txt
     echo "Sample rate of raw wav file: $noaarate" >> $3.txt
@@ -111,23 +65,41 @@ if [ "$biast" == "TRUE" ]
 fi
 
 #If there has been other captures on this date, only make time-related folder, otherwise make date and time-related folders
-if [ ! -d "$wdir$date" ]
+if [ ! -d "$wdir$yr" ]
   then
-    mkdir "$wdir$date"
-    mkdir "$wdir$date"/"$curtime"
-elif [ ! -d "$wdir$date"/"$curtime" ]
+    mkdir "$wdir$yr"
+    mkdir "$wdir$yr"/"$mo"/
+    mkdir "$wdir$yr"/"$mo"/"$day"
+    mkdir "$wdir$yr"/"$mo"/"$day"/"${1}"
+    mkdir "$wdir$yr"/"$mo"/"$day"/"${1}"/"$curtime"
+elif [ ! -d "$wdir$yr"/"$mo" ]
   then
-    mkdir "$wdir$date"/"$curtime"
+    mkdir "$wdir$yr"/"$mo"/
+    mkdir "$wdir$yr"/"$mo"/"$day"
+    mkdir "$wdir$yr"/"$mo"/"$day"/"${1}"
+    mkdir "$wdir$yr"/"$mo"/"$day"/"${1}"/"$curtime"
+elif [ ! -d "$wdir$yr"/"$mo"/"$day" ]
+  then
+    mkdir "$wdir$yr"/"$mo"/"$day"
+    mkdir "$wdir$yr"/"$mo"/"$day"/"${1}"
+    mkdir "$wdir$yr"/"$mo"/"$day"/"${1}"/"$curtime"
+elif [ ! -d "$wdir$yr"/"$mo"/"$day"/"${1}" ]
+  then
+    mkdir "$wdir$yr"/"$mo"/"$day"/"${1}"
+    mkdir "$wdir$yr"/"$mo"/"$day"/"${1}"/"$curtime"
+elif [ ! -d "$wdir$yr"/"$mo"/"$day"/"${1}"/"$curtime" ]
+  then
+    mkdir "$wdir$yr"/"$mo"/"$day"/"${1}"/"$curtime"
 fi
 
 #Create backup of the current tle file, should you want to re-process data past-the-fact
-if [ ! -e "$wdir$date/weather.tle" ]
+if [ ! -e "$wdir$yr/$mo/$day/weather.tle" ]
   then
-    cp $wdir/predict/weather.tle $wdir$date/weather.tle
+    cp $wdir/predict/weather.tle $wdir$yr/$mo/$day/weather.tle
 fi
 
 #Determine if capturing Meteor-M 2 or NOAA, and capture accordingly
-if [ "${8}" != "LRPT" ]
+if [ "${8}" == "APT" ]
   then
     #Use nice if enabled to set process priority
     if [ "$usenice" == "TRUE" ]
@@ -147,27 +119,30 @@ if [ "${8}" != "LRPT" ]
     sox -t wav $3-$noaarate.wav $3.wav rate $noaadownrate
     #Correct the timestamp for the pass duration so map lines up
     touch -r $3-$noaarate.wav $3.wav
+  elif [ "${8}" == "LRPT" ]
+    then
+      #Use nice if enabled to set process priority
+      if [ "$usenice" == "TRUE" ]
+        then
+          #Capture for $6 seconds, using nice value $nicevalue to run rtl_fm at $2 MHz at $lrptrate bandwidth with gain of $mgain in raw IQ format, pipe to sox for wav conversion and downsample, save to $3-$lrptdownrate.wav
+          timeout $6 nice -n $nicevalue /usr/local/bin/rtl_fm -f ${2}M -s $lrptrate -g $mgain -p $ppm -F 9 -M raw | sox -t raw -r $lrptrate -c 2 -b 16 -e s - -t wav $3-$lrptdownrate.wav rate $lrptdownrate
+        else
+          #Capture for $6 seconds at $2 MHz at $lrptrate bandwidth with gain of $mgain in raw IQ format, pipe to sox for wav conversion and downsample, save to $3-$lrptdownrate.wav
+          timeout $6 /usr/local/bin/rtl_fm -f ${2}M -s $lrptrate -g $mgain -p $ppm -F 9 -M raw | sox -t raw -r $lrptrate -c 2 -b 16 -e s - -t wav $3-$lrptdownrate.wav rate $lrptdownrate
+      fi
+      #Turn off bias tee before converting audio if bias tee was enabled
+      if [ "$biast" == "TRUE" ]
+        then
+          /usr/local/bin/rtl_biast -b 0
+      fi
+      #Amplify the signal so it can be (O)QPSK demodulated later. Use the wav from above and apply normalization to -0.1 Db
+      sox --norm=-0.1 $3-$lrptdownrate.wav $3.wav
   else
-    #Use nice if enabled to set process priority
-    if [ "$usenice" == "TRUE" ]
-      then
-        #Capture for $6 seconds, using nice value $nicevalue to run rtl_fm at $2 MHz at $meteorrate bandwidth with gain of $mgain in raw IQ format, pipe to sox for wav conversion and downsample, save to $3-$meteordownrate.wav
-        timeout $6 nice -n $nicevalue /usr/local/bin/rtl_fm -f ${2}M -s $meteorrate -g $mgain -p $ppm -F 9 -M raw | sox -t raw -r $meteorrate -c 2 -b 16 -e s - -t wav $3-$meteordownrate.wav rate $meteordownrate
-      else
-        #Capture for $6 seconds at $2 MHz at $meteorrate bandwidth with gain of $mgain in raw IQ format, pipe to sox for wav conversion and downsample, save to $3-$meteordownrate.wav
-        timeout $6 /usr/local/bin/rtl_fm -f ${2}M -s $meteorrate -g $mgain -p $ppm -F 9 -M raw | sox -t raw -r $meteorrate -c 2 -b 16 -e s - -t wav $3-$meteordownrate.wav rate $meteordownrate
-    fi
-    #Turn off bias tee before converting audio if bias tee was enabled
-    if [ "$biast" == "TRUE" ]
-      then
-        /usr/local/bin/rtl_biast -b 0
-    fi
-    #Amplify the signal so it can be QPSK demodulated later. Use the wav from above at 98% volume to prevent dither clipping.
-    sox -v 0.98 $3-$meteordownrate.wav $3.wav gain -n
+    echo "Unrecognized capture format! Not capturing."
 fi
 
-#Determine if we are processing Meteor-M 2 or NOAA.
-if [ "${8}"  != "LRPT" ]
+#Determine if we are processing APT or LRPT.
+if [ "${8}"  == "APT" ]
   then
     #Some maths to make the map overlay line up properly
     PassStart=`expr $5 + 90`
@@ -218,63 +193,62 @@ if [ "${8}"  != "LRPT" ]
     else
         #If bad capture detected, state that for the record
         echo "Narrow IF band detected, or no Telemetry data found! Was there a good pass?"
-        #If pruning is enabled, delete the directory and current pass
-        if [ "$prune" == TRUE ]
+        #If pruning is enabled, delete the directory and current pass, but only if cleanup is enabled
+        if [ "$prune" == "TRUE" ] && [ "$cleanup" == "TRUE" ]
           then
-            rm -rf $wdir$date/$curtime
+            rm -rf $wdir$yr/$mo/$day/${1}/$curtime
             rm $3*
         fi
     fi
-else
-    #Use meteor_demod to QPSK demodulate the downsampled iq file into symbols. PLL rate of $pll, bandwidth of $meteordownrate
-    /usr/bin/meteor_demod -B -q -b $pll -s $meteordownrate -r 72000 -o $3.s $3.wav
-    #Use medet to decode the symbol files into an image.
-    /usr/local/bin/medet $3.s $3 -cd -q -r $red -g $green -b $blue
-    #If conversion is enabled, then convert!
-    if [ "$conv" == "TRUE" ]
+elif [ "${8}"  == "LRPT" ]
+  then
+    if [ "$1" == "METEOR-M 2" ]
       then
-        #Check for successful decoding first
-        if [ -e $3.bmp ]
-          then
-            #Convert!
-            convert $3.bmp $3.png
-            #If smoothing is enabled, then use the script to do so!
-            if [ "$rectify" == "TRUE" ]
-              then
-                python3 $rdir/rectify.py $3.png
-            fi
-          else
-            #If no successful decoding was found, state why there wasn't a conversion
-            echo "No BMP generated from medet, not converting! Was there a good capture?"
-        fi
-    fi
-    #If email sending is enabled, send an email!
-    if [ "$sendemail" == "TRUE" ]
-      then
-        #Check for successful decoding first
-        if [ -e $3.bmp ]
-          then
-            #Check to see if the file got converted/smoothed. Only one image to send this way
-            if [ "$conv" == "TRUE" ]
-              then
-                if [ "$rectify" == "TRUE" ]
-                  then
-                    #Send rectified png if conversion is enabled and rectification is enabled
-                    mail -s $3 -A $3-rectified.png $senduser < $3.txt
-                  else
-                    #Send png if conversion is enabled
-                    mail -s $3 -A $3.png $senduser < $3.txt
-                fi
-            else
-                #Send bmp is conversion is not enabled
-                mail -s $3 -A $3.bmp $senduser < $3.txt
-            fi
-        else
-          #If no successful decoding was found, state why there wasn't an email sent
-          echo "No BMP generated from medet, not sending mail! Was there a good capture?"
-        fi
+        #Use meteor_demod to demodulate the downsampled iq file into symbols. PLL rate of $pll, bandwidth of $lrptdownrate
+        /usr/bin/meteor_demod -B -q -b $pll -s $lrptdownrate -m qpsk -r $symrate -o $3.s $3.wav
+        #Use meteor_decode to decode the symbol files into an image.
+        /usr/bin/meteor_decode -q -a $red,$green,$blue -o $3.png $3.s
+      else
+        #Use meteor_demod to demodulate the downsampled iq file into symbols. PLL rate of $pll, bandwidth of $lrptdownrate
+        /usr/bin/meteor_demod -B -q -b $pll2 -s $lrptdownrate -m oqpsk -r $symrate2 -o $3.s $3.wav
+        #Use meteor_decode to decode the symbol files into an image.
+        /usr/bin/meteor_decode -d -q -a $red2,$green2,$blue2 -o $3.png $3.s
     fi
 
+    #Verify we got a good pass
+    if [ -s $3.png ]
+      then
+        #If smoothing is enabled, then use the script to do so!
+        if [ "$rectify" == "TRUE" ]
+          then
+            python3 $sdir/rectify.py $3.png
+        fi
+        #If email sending is enabled, send an email!
+        if [ "$sendemail" == "TRUE" ]
+          then
+            #Check to see if the file got converted/smoothed. Only one image to send this way
+            if [ -e $3-rectified.png ]
+              then
+                #Send rectified png if conversion is enabled and rectification is enabled
+                mail -s $3 -A $3-rectified.png $senduser < $3.txt
+              else
+                #Send png if conversion is enabled
+                mail -s $3 -A $3.png $senduser < $3.txt
+            fi
+        fi
+    #If no image is detected, we have a bad pass!
+    else
+      echo "There was no image produced by meteor_decode! Was there a good capture of ${1}?"
+      #If pruning is enabled, let's delete some empty directories and useless files, but only if cleanup is enabled!
+      if [ "$prune" == TRUE ] && [  "$cleanup" == "TRUE" ]
+        then
+          echo "Pruning directory and files from bad capture..."
+          rm -rf $wdir$yr/$mo/$day/${1}/$curtime
+          rm $3*
+      fi
+    fi
+  else
+    echo "Unrecognized processing format! Not processsing!"
 fi
 
 #Perform cleanup if enabled
@@ -297,5 +271,6 @@ fi
 #Move all files to their folders, if they weren't cleaned via prune/cleanup
 if ls $3* 1> /dev/null 2>&1
   then
-    mv "$3"* "$wdir$date"/"$curtime"/
+    mv "$3"* "$wdir$yr"/"$mo"/"$day"/"${1}"/"$curtime"/
+fi
 fi
