@@ -252,7 +252,7 @@ elif [ "${8}"  == "LRPT" ]
 fi
 
 #Perform cleanup if enabled
-if [ "$cleanup" == "TRUE" ]
+if [ "$cleanup" == "TRUE" ] && [ "${3}" != "" ]
   then
     #Check if .s files exist and name begins with $3
     if ls $3*.s 1> /dev/null 2>&1
