@@ -129,7 +129,7 @@ Make a cron job with `crontab -e` and add the following line:
 
     1 0 * * * /home/pi/rpiWX/weather/predict/schedule_all.sh
 
-Rename the config file to just "config" and modify with your options.
+Rename the config file to just "config" and modify with your options. Add the execute permission to the config file with `sudo chmod +x config`.
 
 Optionally, you can kick things off with:
 
