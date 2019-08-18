@@ -1,5 +1,5 @@
 #!/bin/bash
-#V 1.8
+#V 1.9
 #Original credit: haslettj
 #Edit for comments/usibility/functionality: TGYK
 
@@ -139,6 +139,11 @@ if [ "${8}" == "APT" ]
       sox --norm=-0.1 $3-$lrptdownrate.wav $3.wav
   else
     echo "Unrecognized capture format! Not capturing."
+    #Make sure to turn off bias tee if it was turned on, even on unrecognized capture.
+    if [ "$biast" == "TRUE" ]
+      then
+        /usr/local/bin/rtl_biast -b 0
+    fi
 fi
 
 #Determine if we are processing APT or LRPT.
@@ -240,7 +245,7 @@ elif [ "${8}"  == "LRPT" ]
     else
       echo "There was no image produced by meteor_decode! Was there a good capture of ${1}?"
       #If pruning is enabled, let's delete some empty directories and useless files, but only if cleanup is enabled!
-      if [ "$prune" == TRUE ] && [  "$cleanup" == "TRUE" ]
+      if [ "$prune" == "TRUE" ] && [  "$cleanup" == "TRUE" ]
         then
           echo "Pruning directory and files from bad capture..."
           rm -rf $wdir$yr/$mo/$day/${1}/$curtime
@@ -249,10 +254,17 @@ elif [ "${8}"  == "LRPT" ]
     fi
   else
     echo "Unrecognized processing format! Not processsing!"
+    if [ -z "$(ls -A $wdir$yr/$mo/$day/${1}/$curtime)" ] && [ "$prune" == "TRUE" ]
+      then
+        echo "Removing empty directory from unrecognized capture and processing format!"
+        rm -rf $wdir$yr/$mo/$day/${1}/$curtime
+    fi
 fi
 
+
+
 #Perform cleanup if enabled
-if [ "$cleanup" == "TRUE" ] && [ "${3}" != "" ]
+if [ "$cleanup" == "TRUE" ] && [ "$3" != "" ]
   then
     #Check if .s files exist and name begins with $3
     if ls $3*.s 1> /dev/null 2>&1
@@ -269,8 +281,10 @@ if [ "$cleanup" == "TRUE" ] && [ "${3}" != "" ]
 fi
 
 #Move all files to their folders, if they weren't cleaned via prune/cleanup
-if ls $3* 1> /dev/null 2>&1
+if [ "$3" != "" ]
   then
-    mv "$3"* "$wdir$yr"/"$mo"/"$day"/"${1}"/"$curtime"/
-fi
+    if ls $3* 1> /dev/null 2>&1
+      then
+        mv "$3"* "$wdir$yr"/"$mo"/"$day"/"${1}"/"$curtime"/
+    fi
 fi
