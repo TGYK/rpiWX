@@ -1,4 +1,4 @@
-#!/bin/bash#!/bin/bash
+#!/bin/bash
 #V 1.8
 #Original credit: haslettj
 #Edit for comments/usibility/functionality: TGYK
