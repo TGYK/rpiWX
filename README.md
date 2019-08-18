@@ -36,16 +36,6 @@ With contents:
     blacklist rtl2832
     blacklist rtl2830
 
-#### New file at:
-
-    ~/.wxtoimgrc
-
-With contents:
-
-    Latitude: <Your Latitude>
-    Longitude: <Your Longitude EAST POSITIVE>
-    Altitude: 25
-
 ## Wget
 
 #### [wxtoimg](https://wxtoimgrestored.xyz/):
@@ -54,6 +44,21 @@ With contents:
     wget https://wxtoimgrestored.xyz/beta/wxtoimg-armhf-2.11.2-beta.deb
     sudo dpkg -i wxtoimg-armhf-2.11.2-beta.deb
 
+#### New file at:
+
+    ~/.wxtoimgrc
+
+With contents:
+
+    Latitude: <Your Latitude>
+    Longitude: <Your Longitude EAST POSITIVE>
+    Altitude: 25    
+    
+##### To install license key add the following lines to ~/.wxtoimgrc with the proper values: (Optional, unlocks all enhancements. You can find the key on WXtoIMG's restored site.)
+    
+    Registration Name: Firstname Lastname
+    Registration Email: Your@email.com
+    Registration Key: XXXX-XXXX-XXXX-XXXX-XXXX
 ## Gits
 
 #### [rtl-sdr](https://github.com/keenerd/rtl-sdr):
@@ -100,11 +105,6 @@ With contents:
     git clone https://github.com/TGYK/rpiWX.git
     cd rpiWX/weather/predict
     sudo chmod +x *.sh
-##### To install license key add the following lines to ~/.wxtoimgrc with the proper values: (Optional, unlocks all enhancements. You can find the key on WXtoIMG's restored site.)
-    
-    Registration Name: Firstname Lastname
-    Registration Email: Your@email.com
-    Registration Key: XXXX-XXXX-XXXX-XXXX-XXXX
 
 #### [meteor_rectify](https://github.com/dbdexter-dev/meteor_rectify) (Optional):
 
